@@ -1,0 +1,4 @@
+numpy>=1.9
+scipy>=0.16
+pandas>=0.19
+joblib
