@@ -125,7 +125,7 @@ def create_constrained_random_walk(
     starting_point=(0, 0, 0),
     step_size=1.0,
     polar_fixed=None,
-) -> bool:
+):
     """
     Creates a constrained freely joined chain of length N with step step_size.
     Each step of a random walk is tested with the constraint function and is
