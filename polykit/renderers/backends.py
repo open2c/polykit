@@ -7,9 +7,7 @@ import fresnel as fl
 def fresnel(positions,
             bonds,
             colors,
-            cmap='viridis',
             pathtrace=True,
-            show_compartments=False,
             light_samples=22,
             roughness=0.3,
             metal=0.4,
@@ -19,7 +17,39 @@ def fresnel(positions,
             h=600,
             w=600):
     """
-    Render individual simulation snapshots within IPython notebooks using the Fresnel backend
+    Render individual polymer conformations within IPython notebooks using the Fresnel backend
+    
+    Parameters
+    ----------
+    positions : Nx3 float array
+        List of 3D positions of the monomers to be displayed
+    bonds : Mx2 int array
+        List of pairwise inter-monomer bonds to be displayed
+    colors : Nx3 float array
+        List of RGB colors to be assigned to each monomer
+    pathtrace : bool
+        Set to False to enable quick rendering with approximate lighting effects, or True for full path tracing
+    light_samples : int
+        Number of light samples per primary camera ray (only relevant if path_trace == True).
+        Higher numbers reduce sampling noise, but result in slower rendering speeds.
+    roughness : float
+        Roughness of the rendering material. Nominally in the range [0.1,1]
+    metal : float
+        Set to 0 for dielectric materials, or 1 for metals. Intermediate values interpolate between the 2
+    specular : float
+        Controls the strength of specular highlights. Nominally in the range [0.1,1]
+    spec_trans : float
+        Controls the amount of specular light transmission. In the range [0,1]
+    outline : float
+        Width of the outline material
+    h : int
+        Height of the output image (in pixels)
+    w : int
+        Width of the output image (in pixels)
+
+    Returns
+    -------
+        IPython image object suitable for embedding in Jupyter notebooks
     """
     
     scene = fl.Scene()
