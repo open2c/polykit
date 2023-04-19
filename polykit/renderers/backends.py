@@ -7,6 +7,7 @@ import fresnel as fl
 def fresnel(positions,
             bonds,
             colors,
+            diameters,
             pathtrace=True,
             light_samples=22,
             roughness=0.3,
@@ -27,6 +28,8 @@ def fresnel(positions,
         List of pairwise inter-monomer bonds to be displayed
     colors : Nx3 float array
         List of RGB colors to be assigned to each monomer
+    diameters : Mx1 float array
+        List of bond diameters
     pathtrace : bool
         Set to False to enable quick rendering with approximate lighting effects, or True for full path tracing
     light_samples : int
@@ -56,7 +59,7 @@ def fresnel(positions,
     geometry = fl.geometry.Cylinder(scene, N=bonds.shape[0], outline_width=outline)
 
     geometry.points[:] = positions[bonds]
-    geometry.radius[:] = np.ones(bonds.shape[0])*0.5
+    geometry.radius[:] = diameters*0.5
     
     geometry.color[:] = colors[bonds]
     geometry.material = fl.material.Material(color=fl.color.linear([0.25,0.25,0.25]),
