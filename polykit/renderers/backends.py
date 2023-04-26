@@ -75,7 +75,7 @@ def fresnel(positions,
                                                    spec_trans=spec_trans,
                                                    primitive_color_mix=0., solid=0.)
 
-    scene.camera = fl.camera.fit(scene, view='isometric', margin=0)
+    scene.camera = fl.camera.Orthographic.fit(scene, view='isometric', margin=0)
     
     if pathtrace:
         canvas = fl.pathtrace(scene, light_samples=light_samples, w=w, h=h)
