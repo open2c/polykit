@@ -56,6 +56,7 @@ def fresnel(positions,
     """
     
     scene = fl.Scene()
+    
     geometry = fl.geometry.Cylinder(scene, N=bonds.shape[0], outline_width=outline)
 
     geometry.points[:] = positions[bonds]
@@ -69,11 +70,27 @@ def fresnel(positions,
                                              spec_trans=spec_trans,
                                              primitive_color_mix=1.)
     geometry.outline_material = fl.material.Material(color=fl.color.linear([0.25,0.25,0.25]),
-                                                   roughness=2*roughness,
-                                                   metal=metal,
-                                                   specular=specular,
-                                                   spec_trans=spec_trans,
-                                                   primitive_color_mix=0., solid=0.)
+                                                     roughness=2*roughness,
+                                                     metal=metal,
+                                                     specular=specular,
+                                                     spec_trans=spec_trans,
+                                                     primitive_color_mix=0., solid=0.)
+    
+    polymer_mask = np.ones(positions.shape[0], dtype=bool)
+    polymer_mask[bonds.flatten()] = False
+    
+    if np.count_nonzero(polymer_mask):
+        geometry2 = fl.geometry.Sphere(scene, N=np.count_nonzero(polymer_mask), outline_width=outline)
+        
+        geometry2.position[:] = positions[polymer_mask]
+        geometry2.radius[:] = np.ones(np.count_nonzero(polymer_mask)) * 0.5
+        
+        geometry2.material = fl.material.Material(color=fl.color.linear([0.71,0.02,0.15]),
+                                                  roughness=roughness,
+                                                  metal=metal,
+                                                  specular=specular,
+                                                  spec_trans=spec_trans,
+                                                  primitive_color_mix=0., solid=0.)
 
     scene.camera = fl.camera.Orthographic.fit(scene, view='isometric', margin=0)
     
