@@ -79,18 +79,21 @@ def fresnel(positions,
     polymer_mask = np.ones(positions.shape[0], dtype=bool)
     polymer_mask[bonds.flatten()] = False
     
-    if np.count_nonzero(polymer_mask):
-        geometry2 = fl.geometry.Sphere(scene, N=np.count_nonzero(polymer_mask), outline_width=outline)
+    number_of_binders = np.count_nonzero(polymer_mask)
+    
+    if number_of_binders > 0:
+        geometry2 = fl.geometry.Sphere(scene, N=number_of_binders, outline_width=outline)
         
         geometry2.position[:] = positions[polymer_mask]
-        geometry2.radius[:] = np.ones(np.count_nonzero(polymer_mask)) * 0.5
+        geometry2.radius[:] = np.ones(number_of_binders, dtype=np.float32) * 0.5
         
-        geometry2.material = fl.material.Material(color=fl.color.linear([0.71,0.02,0.15]),
+        geometry2.color[:] = colors[polymer_mask]
+        geometry2.material = fl.material.Material(color=fl.color.linear([0.25,0.25,0.25]),
                                                   roughness=roughness,
                                                   metal=metal,
                                                   specular=specular,
                                                   spec_trans=spec_trans,
-                                                  primitive_color_mix=0., solid=0.)
+                                                  primitive_color_mix=1., solid=0.)
 
     scene.camera = fl.camera.Orthographic.fit(scene, view='isometric', margin=0)
     
