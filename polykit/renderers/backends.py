@@ -7,7 +7,7 @@ import fresnel as fl
 def fresnel(positions,
             bonds,
             colors,
-            diameters,
+            radii,
             pathtrace=True,
             light_samples=22,
             roughness=0.3,
@@ -28,8 +28,8 @@ def fresnel(positions,
         List of pairwise inter-monomer bonds to be displayed
     colors : Nx3 float array
         List of RGB colors to be assigned to each monomer
-    diameters : Mx1 float array
-        List of bond diameters
+    radii : Mx1 float array
+        List of bond/particle radii
     pathtrace : bool
         Set to False to enable quick rendering with approximate lighting effects, or True for full path tracing
     light_samples : int
@@ -59,16 +59,17 @@ def fresnel(positions,
     
     geometry = fl.geometry.Cylinder(scene, N=bonds.shape[0], outline_width=outline)
 
-    geometry.points[:] = positions[bonds]
-    geometry.radius[:] = diameters*0.5
-    
     geometry.color[:] = colors[bonds]
+    geometry.points[:] = positions[bonds]
+    geometry.radius[:] = radii[bonds].mean(axis=1)
+    
     geometry.material = fl.material.Material(color=fl.color.linear([0.25,0.25,0.25]),
                                              roughness=roughness,
                                              metal=metal,
                                              specular=specular,
                                              spec_trans=spec_trans,
                                              primitive_color_mix=1.)
+                                             
     geometry.outline_material = fl.material.Material(color=fl.color.linear([0.25,0.25,0.25]),
                                                      roughness=2*roughness,
                                                      metal=metal,
@@ -77,17 +78,17 @@ def fresnel(positions,
                                                      primitive_color_mix=0., solid=0.)
     
     polymer_mask = np.ones(positions.shape[0], dtype=bool)
-    polymer_mask[bonds.flatten()] = False
+    polymer_mask[bonds] = False
     
-    number_of_binders = np.count_nonzero(polymer_mask)
+    num_unbound_atoms = np.count_nonzero(polymer_mask)
     
-    if number_of_binders > 0:
-        geometry2 = fl.geometry.Sphere(scene, N=number_of_binders, outline_width=outline)
-        
-        geometry2.position[:] = positions[polymer_mask]
-        geometry2.radius[:] = np.ones(number_of_binders, dtype=np.float32) * 0.5
+    if num_unbound_atoms > 0:
+        geometry2 = fl.geometry.Sphere(scene, N=num_unbound_atoms, outline_width=outline)
         
         geometry2.color[:] = colors[polymer_mask]
+        geometry2.radius[:] = radii[polymer_mask]
+        geometry2.position[:] = positions[polymer_mask]
+
         geometry2.material = fl.material.Material(color=fl.color.linear([0.25,0.25,0.25]),
                                                   roughness=roughness,
                                                   metal=metal,
@@ -99,6 +100,7 @@ def fresnel(positions,
     
     if pathtrace:
         canvas = fl.pathtrace(scene, light_samples=light_samples, w=w, h=h)
+        
     else:
         canvas = fl.preview(scene, h=h, w=w)
         
