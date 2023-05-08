@@ -61,7 +61,7 @@ def fresnel(positions,
 
     geometry.color[:] = colors[bonds]
     geometry.points[:] = positions[bonds]
-    geometry.radius[:] = radii[bonds].mean(axis=1)
+    geometry.radius[:] = radii[bonds].min(axis=1)
     
     geometry.material = fl.material.Material(color=fl.color.linear([0.25,0.25,0.25]),
                                              roughness=roughness,
