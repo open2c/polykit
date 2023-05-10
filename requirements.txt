@@ -1,7 +1,6 @@
 numpy<1.24
 scipy>=0.16
 pandas>=0.19
-fresnel>=0.13
 matplotlib>=2.0
 rowan
 joblib
