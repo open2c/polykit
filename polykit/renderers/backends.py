@@ -33,7 +33,7 @@ class Fresnel():
         """
         
         view = interact.SceneView(self.scene)
-
+            
         if standalone:
             view.show()
             interact.app.exec_()
@@ -73,7 +73,7 @@ class Fresnel():
             canvas = fl.preview(self.scene, h=height, w=width)
         
         if png_output_file:
-            image = PIL.Image.fromarray(canvas, mode='RGBA')
+            image = PIL.Image.fromarray(canvas[:], mode='RGBA')
             image.save(png_output_file)
             
         else:
