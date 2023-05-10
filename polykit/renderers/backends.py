@@ -33,10 +33,13 @@ class Fresnel():
         """
         
         view = interact.SceneView(self.scene)
-        view.show()
-            
+
         if standalone:
+            view.show()
             interact.app.exec_()
+            
+        else:
+            return view
             
             
     def static(self,
