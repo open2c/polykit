@@ -19,18 +19,23 @@ class Fresnel():
     """
         
     def __init__(self, *args, **kwargs):
+    
         self.scene = self._fresnel(*args, **kwargs)
             
             
-    def interactive(self, standalone=True):
+    def interactive(self, intensity=0.4, standalone=True):
         """
         Conjure up interactive rendering window
         
         Parameters
         ----------
+        intensity : float
+            Intensity of extra light for interactive volume rendering
         standalone : bool
             Set to True if called within standalone script
         """
+        
+        self.scene.lights.append(fl.light.Light(direction=[0,0,1], color=[intensity]*3, theta=np.pi))
         
         view = interact.SceneView(self.scene)
             
@@ -85,10 +90,10 @@ class Fresnel():
                  bonds,
                  colors,
                  radii,
-                 roughness=0.3,
                  metal=0.4,
                  specular=0.8,
-                 spec_trans=0.,
+                 spec_trans=0.1,
+                 roughness=0.2,
                  outline=0.05):
         """
         Render individual polymer conformations within IPython notebooks using the Fresnel backend
@@ -123,23 +128,24 @@ class Fresnel():
             
         geometry = fl.geometry.Cylinder(scene, N=bonds.shape[0], outline_width=outline)
         
-        geometry.color[:] = colors[bonds]
         geometry.points[:] = positions[bonds]
         geometry.radius[:] = radii[bonds].min(axis=1)
-            
-        geometry.material = fl.material.Material(color=fl.color.linear([0.25,0.25,0.25]),
+        geometry.color[:] = fl.color.linear(colors[bonds].reshape(-1, 3)).reshape((-1, 2, 3))
+
+        geometry.material = fl.material.Material(color=fl.color.linear([.25,.25,.25]),
                                                  roughness=roughness,
                                                  metal=metal,
                                                  specular=specular,
                                                  spec_trans=spec_trans,
-                                                 primitive_color_mix=1.)
-                                                     
-        geometry.outline_material = fl.material.Material(color=fl.color.linear([0.25,0.25,0.25]),
+                                                 primitive_color_mix=1.,
+                                                 solid=0.)
+        geometry.outline_material = fl.material.Material(color=fl.color.linear([.25,.25,.25]),
                                                          roughness=2*roughness,
                                                          metal=metal,
                                                          specular=specular,
                                                          spec_trans=spec_trans,
-                                                         primitive_color_mix=0., solid=0.)
+                                                         primitive_color_mix=0.,
+                                                         solid=0.)
             
         polymer_mask = np.ones(positions.shape[0], dtype=bool)
         polymer_mask[bonds] = False
@@ -149,17 +155,13 @@ class Fresnel():
         if num_unbound_atoms > 0:
             geometry2 = fl.geometry.Sphere(scene, N=num_unbound_atoms, outline_width=outline)
                 
-            geometry2.color[:] = colors[polymer_mask]
             geometry2.radius[:] = radii[polymer_mask]
             geometry2.position[:] = positions[polymer_mask]
-        
-            geometry2.material = fl.material.Material(color=fl.color.linear([0.25,0.25,0.25]),
-                                                      roughness=roughness,
-                                                      metal=metal,
-                                                      specular=specular,
-                                                      spec_trans=spec_trans,
-                                                      primitive_color_mix=1., solid=0.)
-        
+            geometry2.color[:] = fl.color.linear(colors[polymer_mask])
+
+            geometry2.material = geometry.material
+            geometry2.outline_material = geometry.material.outline_material
+
         scene.camera = fl.camera.Orthographic.fit(scene, view='isometric', margin=0)
             
         return scene
