@@ -35,7 +35,9 @@ class Fresnel():
             Set to True if called within standalone script
         """
         
-        self.scene.lights.append(fl.light.Light(direction=[0,0,1], color=[intensity]*3, theta=np.pi))
+        self.scene.lights.append(fl.light.Light(direction=[0,0,1],
+                                                color=[intensity]*3,
+                                                theta=np.pi))
         
         view = interact.SceneView(self.scene)
             
@@ -104,7 +106,7 @@ class Fresnel():
             List of 3D positions of the monomers to be displayed
         bonds : Mx2 int array
             List of pairwise inter-monomer bonds to be displayed
-        colors : Nx3 float array
+        colors : Nx3 or Nx4 float array
             List of RGB colors to be assigned to each monomer
         radii : Mx1 float array
             List of bond/particle radii
@@ -125,12 +127,14 @@ class Fresnel():
         """
             
         scene = fl.Scene()
-            
-        geometry = fl.geometry.Cylinder(scene, N=bonds.shape[0], outline_width=outline)
         
+        geometry = fl.geometry.Cylinder(scene, N=bonds.shape[0], outline_width=outline)
+
         geometry.points[:] = positions[bonds]
         geometry.radius[:] = radii[bonds].min(axis=1)
-        geometry.color[:] = fl.color.linear(colors[bonds].reshape(-1, 3)).reshape((-1, 2, 3))
+        
+        corrected_colors = fl.color.linear(colors)
+        geometry.color[:] = corrected_colors[bonds]
 
         geometry.material = fl.material.Material(color=fl.color.linear([.25,.25,.25]),
                                                  roughness=roughness,
@@ -157,7 +161,8 @@ class Fresnel():
                 
             geometry2.radius[:] = radii[polymer_mask]
             geometry2.position[:] = positions[polymer_mask]
-            geometry2.color[:] = fl.color.linear(colors[polymer_mask])
+            
+            geometry2.color[:] = corrected_colors[polymer_mask]
 
             geometry2.material = geometry.material
             geometry2.outline_material = geometry.material.outline_material
