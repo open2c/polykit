@@ -98,7 +98,7 @@ class Fresnel():
                  roughness=0.2,
                  outline=0.05):
         """
-        Render individual polymer conformations within IPython notebooks using the Fresnel backend
+        Render individual polymer/particle configurations using the Fresnel backend library
             
         Parameters
         ----------
