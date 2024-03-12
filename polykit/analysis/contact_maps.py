@@ -43,12 +43,14 @@ all the things that "averageContacts" do, but on only one core. In fact, "averag
 """
 
 import ctypes
+import cooler
 import multiprocessing as mp
 import random
 import warnings
 from contextlib import closing
 
 import numpy as np
+import pandas as pd
 
 from . import polymer_analyses
 
@@ -585,3 +587,47 @@ def monomerResolutionContactMapSubchains(
         uniqueContacts=True,
         nproc=n,
     )
+
+
+def coolify(data,
+            cool_uri,
+            chrom_dict={},
+            binsize=2500,
+            chunksize=10000000):
+    """
+    Save a simulated contact map to .cool, and return corresponding Cooler
+    
+    Parameters
+        ----------
+        data : NxN int array
+            Simulated contact map (in dense numpy.ndarray format)
+        cool_uri : str
+            Name of .cool file to be created (excluding extension)
+        binsize : int
+            Map resolution in bp (i.e., genomic size of each simulated monomer)
+        chunksize : int
+            Number of pixels handled by each worker process
+            
+        Returns
+        -------
+            Associated cooler.Cooler object
+    """
+    
+    nbins = data.shape[0]
+    
+    chrom_dict = chrom_dict if chrom_dict else {'chr_sim': binsize*nbins}
+    chrom_sizes = pd.Series(chrom_dict, name='length', dtype='int64')
+
+    assert binsize*nbins == sum(chrom_sizes), "Chromosome sizes do not match map dimensions"
+
+    bins = cooler.binnify(chrom_sizes, binsize)
+    bins['weight'] = np.ones(nbins) * np.sqrt(2/nbins)
+
+    pixels = cooler.create._ingest.ArrayLoader(bins, data, chunksize=chunksize)
+
+    cool_uri = "%s.%d.cool" % (cool_uri, binsize)
+    cooler.create._create.create(cool_uri, bins, pixels)
+
+    clr = cooler.Cooler(cool_uri)
+
+    return clr
