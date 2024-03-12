@@ -603,6 +603,9 @@ def coolify(data,
             Simulated contact map (in dense numpy.ndarray format)
         cool_uri : str
             Name of .cool file to be created (excluding extension)
+        chrom_dict : dict
+            Dictionary of chromosome lengths, in the form {'chr1':size1, ...}
+            If unspecified, assumes the map spans a single chromosome
         binsize : int
             Map resolution in bp (i.e., genomic size of each simulated monomer)
         chunksize : int
@@ -631,3 +634,4 @@ def coolify(data,
     clr = cooler.Cooler(cool_uri)
 
     return clr
+    
