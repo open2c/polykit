@@ -589,7 +589,7 @@ def monomerResolutionContactMapSubchains(
     )
 
 
-def coolify(data,
+def coolify(contact_matrix,
             cool_uri,
             chrom_dict={},
             binsize=2500,
@@ -599,7 +599,7 @@ def coolify(data,
     
     Parameters
         ----------
-        data : NxN int array
+        contact_matrix : NxN int array
             Simulated contact map (in dense numpy.ndarray format)
         cool_uri : str
             Name of .cool file to be created (excluding extension)
@@ -616,8 +616,8 @@ def coolify(data,
             Associated cooler.Cooler object
     """
     
-    nbins = data.shape[0]
-    
+    nbins = contact_matrix.shape[0]
+
     chrom_dict = chrom_dict if chrom_dict else {'chr_sim': binsize*nbins}
     chrom_sizes = pd.Series(chrom_dict, name='length', dtype='int64')
 
@@ -626,12 +626,10 @@ def coolify(data,
     bins = cooler.binnify(chrom_sizes, binsize)
     bins['weight'] = np.ones(nbins) * np.sqrt(2/nbins)
 
-    pixels = cooler.create._ingest.ArrayLoader(bins, data, chunksize=chunksize)
+    pixels = cooler.create.ArrayLoader(bins, contact_matrix, chunksize=chunksize)
+    
+    cool_uri = f"{cool_uri}.{binsize}.cool"
+    cooler.create_cooler(cool_uri, bins, pixels, ordered=True)
 
-    cool_uri = "%s.%d.cool" % (cool_uri, binsize)
-    cooler.create._create.create(cool_uri, bins, pixels)
-
-    clr = cooler.Cooler(cool_uri)
-
-    return clr
+    return cooler.Cooler(cool_uri)
     
