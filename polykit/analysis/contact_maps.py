@@ -624,7 +624,7 @@ def coolify(contact_matrix,
     assert binsize*nbins == sum(chrom_sizes), "Chromosome sizes do not match map dimensions"
 
     bins = cooler.binnify(chrom_sizes, binsize)
-    bins['weight'] = np.ones(nbins) * np.sqrt(2/nbins)
+    bins['weight'] = np.ones(nbins)
 
     pixels = cooler.create.ArrayLoader(bins, contact_matrix, chunksize=chunksize)
     
