@@ -4,11 +4,11 @@ import IPython
 import numpy as np
 import fresnel as fl
 
-try:
-    import fresnel.interact as interact
+#try:
+#    import fresnel.interact as interact
     
-except ImportError:
-    pass
+#except ImportError:
+#    pass
 
 
 class Fresnel():
