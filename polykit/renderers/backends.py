@@ -165,7 +165,7 @@ class Fresnel():
             geometry2.color[:] = corrected_colors[polymer_mask]
 
             geometry2.material = geometry.material
-            geometry2.outline_material = geometry.material.outline_material
+            geometry2.outline_material = geometry.outline_material
 
         scene.camera = fl.camera.Orthographic.fit(scene, view='isometric', margin=0)
             
