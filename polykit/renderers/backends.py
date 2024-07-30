@@ -23,26 +23,21 @@ class Fresnel():
         self.scene = self._fresnel(*args, **kwargs)
             
             
-    def interactive(self, intensity=0.4, standalone=True):
+    def interactive(self, standalone=True):
         """
         Conjure up interactive rendering window
         
         Parameters
         ----------
-        intensity : float
-            Intensity of extra light for interactive volume rendering
         standalone : bool
             Set to True if called within standalone script
         """
-        
-        self.scene.lights.append(fl.light.Light(direction=[0,0,1],
-                                                color=[intensity]*3,
-                                                theta=np.pi))
         
         view = interact.SceneView(self.scene)
             
         if standalone:
             view.show()
+            
             interact.app.exec_()
             
         else:
@@ -92,6 +87,7 @@ class Fresnel():
                  bonds,
                  colors,
                  radii,
+                 intensity=0.,
                  metal=0.4,
                  specular=0.8,
                  spec_trans=0.1,
@@ -106,10 +102,12 @@ class Fresnel():
             List of 3D positions of the monomers to be displayed
         bonds : Mx2 int array
             List of pairwise inter-monomer bonds to be displayed
-        colors : Nx3 or Nx4 float array
-            List of RGB colors to be assigned to each monomer
+        colors : Nx3 or Nx4 or Mx3 or Mx4 float array
+            List of RGB colors to be assigned to each monomer or bond
         radii : Mx1 float array
             List of bond/particle radii
+        intensity : float
+            Intensity of extra light for gamma correction
         roughness : float
             Roughness of the rendering material. Nominally in the range [0.1,1]
         metal : float
@@ -134,7 +132,13 @@ class Fresnel():
         geometry.radius[:] = radii[bonds].min(axis=1)
         
         corrected_colors = fl.color.linear(colors)
-        geometry.color[:] = corrected_colors[bonds]
+
+        if corrected_colors.shape[0] == positions.shape[0]:
+                geometry.color[:] = corrected_colors[bonds]
+        elif corrected_colors.shape[0] == bonds.shape[0]:
+                geometry.color[:] = corrected_colors[:, None, :]
+        else:
+                raise ValueError("Color array does not match particle or bond dimensions")
 
         geometry.material = fl.material.Material(color=fl.color.linear([.25,.25,.25]),
                                                  roughness=roughness,
@@ -168,5 +172,6 @@ class Fresnel():
             geometry2.outline_material = geometry.outline_material
 
         scene.camera = fl.camera.Orthographic.fit(scene, view='isometric', margin=0)
-            
+        scene.lights.append(fl.light.Light(direction=[0,0,1], color=[intensity]*3, theta=np.pi))
+                                                
         return scene
