@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from matplotlib import colormaps
 from matplotlib.cm import ScalarMappable
 from matplotlib.ticker import AutoLocator
 from matplotlib.colorbar import ColorbarBase
@@ -52,12 +53,7 @@ def chromosome_viewer(chrom_lengths,
         chrom_colors = colors[chrom_bounds[i]:chrom_bounds[i+1], :]
         chrom_map = ListedColormap(chrom_colors, name=map_name)
         
-        try:
-            plt.register_cmap(name=map_name, cmap=chrom_map)
-            
-        except ValueError:
-            pass
-        
+        colormaps.register(name=map_name, cmap=chrom_map, force=True)
         plt.set_cmap(chrom_map)
         
         cb = ColorbarBase(ax, orientation='horizontal', norm=NoNorm())
@@ -151,8 +147,10 @@ def voxels_to_pixels_RGB(raster,
 
     if mode == 'max':
         raster_2D = raster.max(axis=axis)
+		
     elif mode == 'sum':
         raster_2D = raster.sum(axis=axis)
+		
     else:
         raise RuntimeError(f"Unsupported projection mode {mode}")
 		
